@@ -16,10 +16,12 @@ import kotlinx.css.*
 import io.ktor.auth.*
 import io.ktor.gson.*
 import io.ktor.features.*
+import io.ktor.locations.*
 import org.slf4j.event.*
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
+@KtorExperimentalLocationsAPI
 @Suppress("unused") // Referenced in application.conf
 @kotlin.jvm.JvmOverloads
 fun Application.module(testing: Boolean = false) {
@@ -48,6 +50,7 @@ fun Application.module(testing: Boolean = false) {
 
     install(ContentNegotiation) {
         gson {
+            setPrettyPrinting()
         }
     }
 
@@ -62,8 +65,15 @@ fun Application.module(testing: Boolean = false) {
         maxRangeCount = 10
     }
 
+    install(Locations) {
+
+    }
+
     routing {
+        trace { application.log.trace(it.buildText()) }
+
         books()
+
         get("/") {
             call.respondText("HELLO WORLD!", contentType = ContentType.Text.Plain)
         }

@@ -40,6 +40,7 @@ dependencies {
     implementation("io.ktor:ktor-auth:$ktor_version")
     implementation("io.ktor:ktor-gson:$ktor_version")
     implementation("io.ktor:ktor-server-host-common:$ktor_version")
+    implementation("io.ktor:ktor-locations:$ktor_version")
     testImplementation("io.ktor:ktor-server-tests:$ktor_version")
 }
 
