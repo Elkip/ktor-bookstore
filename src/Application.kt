@@ -41,10 +41,18 @@ fun Application.module(testing: Boolean = false) {
         */
     }
 
+    val users = listOf<String>("shopper1", "shopper2", "shopper3")
+    val admins = listOf<String>("admin")
     install(Authentication) {
-        basic("myBasicAuth") {
-            realm = "Ktor Server"
-            validate { if (it.name == "test" && it.password == "password") UserIdPrincipal(it.name) else null }
+        basic("bookStoreAuth") {
+            realm = "Book store"
+            validate {
+                if
+                        ((users.contains(it.name) || admins.contains(it.name))
+                    && it.password == "password"
+                ) UserIdPrincipal(it.name)
+                else null
+            }
         }
     }
 
@@ -59,6 +67,13 @@ fun Application.module(testing: Boolean = false) {
         filter { call -> call.request.path().startsWith("/") }
     }
 
+    install(StatusPages) {
+        exception<Throwable> { cause ->
+            call.respond(HttpStatusCode.InternalServerError)
+            throw cause
+        }
+    }
+
     install(PartialContent) {
         // Maximum number of ranges that will be accepted from a HTTP request.
         // If the HTTP request specifies more ranges, they will all be merged into a single range.
@@ -66,7 +81,6 @@ fun Application.module(testing: Boolean = false) {
     }
 
     install(Locations) {
-
     }
 
     routing {
@@ -77,6 +91,14 @@ fun Application.module(testing: Boolean = false) {
         get("/") {
             call.respondText("HELLO WORLD!", contentType = ContentType.Text.Plain)
         }
+
+        authenticate("bookStoreAuth") {
+            get("/api/tryauth") {
+                val principal = call.principal<UserIdPrincipal>()!!
+                call.respondText("Hello ${principal.name}")
+            }
+        }
+
 
         get("/html-dsl") {
             call.respondHtml {
@@ -102,13 +124,6 @@ fun Application.module(testing: Boolean = false) {
                 rule("p.myclass") {
                     color = Color.blue
                 }
-            }
-        }
-
-        authenticate("myBasicAuth") {
-            get("/protected/route/basic") {
-                val principal = call.principal<UserIdPrincipal>()!!
-                call.respondText("Hello ${principal.name}")
             }
         }
 
